@@ -17,6 +17,8 @@ public final class ChooseQuestionAnswer implements Answer {
                 return 2;
             case "D":
                 return 3;
+            case "E":
+                return 4;
         }
         throw new RuntimeException("WHAT");
     }

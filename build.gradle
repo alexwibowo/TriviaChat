@@ -1,25 +1,51 @@
-apply plugin: 'java'
-apply plugin: 'application'
+plugins {
+    id 'org.springframework.boot' version '2.3.3.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'java'
+}
 
-mainClassName = 'SheetsQuickstart'
+
+group = 'com.wibowo.games'
+version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-version = '1.0'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation platform("org.apache.logging.log4j:log4j-bom:${log4j2BomVersion}")
-    runtimeOnly group:"org.apache.logging.log4j", name: "log4j-1.2-api"
-    runtimeOnly group:"org.apache.logging.log4j", name: "log4j-jcl"
-    runtimeOnly group:"org.apache.logging.log4j", name: "log4j-slf4j-impl"
-    implementation group:"org.slf4j", name: "slf4j-api", version: slf4jVersion
-
+    //spring-boot-starter-web contains the following dependencies:
+    //
+    //spring-boot-starter
+    //jackson
+    //spring-core
+    //spring-mvc
+    //spring-boot-starter-tomcat
+    implementation('org.springframework.boot:spring-boot-starter-web'){
+        /** Exclude commons-logging and logback from spring boot. We are using log4j2 */
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        exclude group: "ch.qos.logback", module: "logback-classic"
+    }
+    compile "org.springframework.boot:spring-boot-starter-log4j2:${springBootVersion}"
+    compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"){
+        /** Exclude commons-logging and logback from spring boot. We are using log4j2 */
+        exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        exclude group: "ch.qos.logback", module: "logback-classic"
+    }
+    compile 'com.github.messenger4j:messenger4j:1.1.0'
 
     implementation 'org.jetbrains:annotations:20.0.0'
     implementation 'com.google.api-client:google-api-client:1.30.4'
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.30.4'
     implementation 'com.google.apis:google-api-services-sheets:v4-rev581-1.25.0'
+
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 }
+
+test {
+    useJUnitPlatform()
+}
+

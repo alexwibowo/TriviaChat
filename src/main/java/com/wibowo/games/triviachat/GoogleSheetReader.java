@@ -63,11 +63,13 @@ public class GoogleSheetReader {
         return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
     }
 
-    public static void main(String... args) throws IOException, GeneralSecurityException {
+    public Topic retrieveTopic(final String topicName,
+                               final String range) throws IOException, GeneralSecurityException {
+        final Topic topic = new Topic(topicName);
+
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadsheetId = "10GqhM00DjSnPYj88lX64DcpHWl6KjaJZYla5Wg6expA";
-        final String range = "Cardiology!A2:N";
         final Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
@@ -75,8 +77,7 @@ public class GoogleSheetReader {
                 .get(spreadsheetId, range)
                 .execute();
 
-        final Topic topic = new Topic("Cardiology");
-        List<List<Object>> values = response.getValues();
+        final List<List<Object>> values = response.getValues();
         if (values == null || values.isEmpty()) {
             LOGGER.error("No data found.");
         } else {
@@ -140,19 +141,8 @@ public class GoogleSheetReader {
                     LOGGER.error("Unable to parse question [{}]", questionText, e);
                 }
             }
-
-            LOGGER.info("========== TOPIC: {}", topic.getTopicName());
-            for (final QuestionSet questionSet : topic) {
-                LOGGER.info("== SET: {}", questionSet.getSetNumber());
-                for (final Question question : questionSet) {
-                    LOGGER.info("QUESTION: {}", question.getQuestionText());
-                    for (String option : question.getOptions()) {
-                        LOGGER.info("\tOPTION: {}", option);
-                    }
-                    LOGGER.info("Correct answer is: {}", question.getAnswer());
-                }
-            }
         }
+        return topic;
     }
 
 }

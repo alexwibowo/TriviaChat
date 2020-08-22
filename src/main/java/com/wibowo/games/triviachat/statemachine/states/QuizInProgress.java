@@ -4,22 +4,24 @@ import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
 import com.wibowo.games.triviachat.statemachine.answers.Answer;
 import com.wibowo.games.triviachat.statemachine.answers.ChooseQuestionAnswer;
-import com.wibowo.games.triviachat.statemachine.answers.Reset;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class QuizInProgress implements State{
     public static final QuizInProgress INSTANCE = new QuizInProgress();
+    private static final List<String> optionLetters = Arrays.asList("A","B","C","D","E","F","G","H");
 
     @Override
     public List<Answer> availableUserOptions(final ChatStateMachineContext context) {
         final Question currentQuestion = context.getCurrentQuestion();
-        final List<Answer> answers = currentQuestion.getOptions().stream()
-                .map(ChooseQuestionAnswer::new)
-                .collect(Collectors.toList());
-        answers.add(Reset.INSTANCE);
+
+        final List<String> options = currentQuestion.getOptions();
+        final List<Answer> answers = new ArrayList<>();
+        for (int i = 0; i < options.size(); i++) {
+            answers.add(new ChooseQuestionAnswer(optionLetters.get(i)));
+        }
         return answers;
     }
 
@@ -47,9 +49,16 @@ public final class QuizInProgress implements State{
     @Override
     public List<String> machineResponses(final ChatStateMachineContext context) {
         final Question currentQuestion = context.getCurrentQuestion();
-        return Arrays.asList(
-                currentQuestion.getQuestionText()
-        );
+        final List<String> options = currentQuestion.getOptions();
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append(currentQuestion.getQuestionText()).append("\n");
+
+        for (int i = 0; i < options.size(); i++) {
+            builder.append(optionLetters.get(i)).append(".").append(options.get(i)).append("\n");
+        }
+
+        return Arrays.asList(builder.toString());
     }
 
 }

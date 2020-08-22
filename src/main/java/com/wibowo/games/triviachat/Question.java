@@ -12,6 +12,7 @@ public final class Question {
     private final String questionText;
     private int correctAnswerIndex;
     private final List<String> options;
+    private String explanation;
 
     public Question(final @NotNull String questionText) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(questionText));
@@ -28,23 +29,26 @@ public final class Question {
         return correctAnswerIndex;
     }
 
-    public void setCorrectAnswerIndex(final int correctAnswerIndex) {
+    public Question setCorrectAnswerIndex(final int correctAnswerIndex) {
         Preconditions.checkArgument(!options.isEmpty());
         Preconditions.checkArgument(correctAnswerIndex >= 0 && correctAnswerIndex <= options.size() - 1);
         this.correctAnswerIndex = correctAnswerIndex;
+        return this;
     }
 
     public List<String> getOptions() {
         return options;
     }
 
-    @NotNull
-    public Question addOptions(final @NotNull String... option) {
-        for (int i = 0; i < option.length; i++) {
-            addOption(option[i]);
-        }
+    public String getExplanation() {
+        return explanation;
+    }
+
+    public Question setExplanation(String explanation) {
+        this.explanation = explanation;
         return this;
     }
+
     @NotNull
     public Question addOption(final @NotNull String option) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(option));
