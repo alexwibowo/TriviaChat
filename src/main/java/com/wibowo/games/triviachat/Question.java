@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class Question {
     @NotNull
@@ -40,11 +41,11 @@ public final class Question {
         return options;
     }
 
-    public String getExplanation() {
-        return explanation;
+    public Optional<String> getExplanation() {
+        return Optional.ofNullable(explanation);
     }
 
-    public Question setExplanation(String explanation) {
+    public Question setExplanation(final String explanation) {
         this.explanation = explanation;
         return this;
     }

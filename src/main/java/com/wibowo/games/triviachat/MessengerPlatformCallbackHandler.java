@@ -40,6 +40,7 @@ import com.wibowo.games.triviachat.statemachine.answers.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -79,13 +80,16 @@ public class MessengerPlatformCallbackHandler {
 
     private final Messenger messenger;
     private final TopicRepository topicRepository;
+    private final String chatPageId;
 
 
     @Autowired
     public MessengerPlatformCallbackHandler(final Messenger messenger,
-                                            final TopicRepository topicRepository) {
+                                            final TopicRepository topicRepository,
+                                            final @Value("${messenger4j.triviaTimePageId}") String chatPageId) {
         this.messenger = messenger;
         this.topicRepository = topicRepository;
+        this.chatPageId = chatPageId;
         try {
             final GoogleSheetReader googleSheetReader = new GoogleSheetReader();
             topicRepository.addTopic(googleSheetReader.retrieveTopic("CARDIOLOGY", "Cardiology!A2:N"));
@@ -124,39 +128,40 @@ public class MessengerPlatformCallbackHandler {
             this.messenger.onReceiveEvents(payload, of(signature), event -> {
                 final String senderId = event.senderId();
 
-                final ChatStateMachine chatStateMachine = chatStateMachines.computeIfAbsent(senderId, senderId1 -> {
-                    try {
-                        final UserProfile userProfile = MessengerPlatformCallbackHandler.this.messenger.queryUserProfile(senderId1);
-                        final ChatStateMachineContext chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2});
-                        return new ChatStateMachine(chatStateMachineContext);
-                    } catch (MessengerApiException|MessengerIOException e) {
-                        LOGGER.error("Something weird", e);
-                        return new ChatStateMachine(new ChatStateMachineContext(new UserProfile("UNKNOWN", "UNKNOWN", "UNKNOWN", "AU", (float) 10, UserProfile.Gender.MALE)
-                                , topicRepository, new int[]{1, 2, 3}));
+                if (!chatPageId.equals(senderId)) {
+                    final ChatStateMachine chatStateMachine = chatStateMachines.computeIfAbsent(senderId, senderId1 -> {
+                        try {
+                            final UserProfile userProfile = MessengerPlatformCallbackHandler.this.messenger.queryUserProfile(senderId1);
+                            final ChatStateMachineContext chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2});
+                            return new ChatStateMachine(chatStateMachineContext);
+                        } catch (MessengerApiException|MessengerIOException e) {
+                            LOGGER.error("Something weird", e);
+                            return new ChatStateMachine(new ChatStateMachineContext(new UserProfile("UNKNOWN", "UNKNOWN", "UNKNOWN", "AU", (float) 10, UserProfile.Gender.MALE)
+                                    , topicRepository, new int[]{1, 2, 3}));
+                        }
+                    });
+
+                    if (event.isTextMessageEvent()) {
+                        handleTextMessageEvent(chatStateMachine, event.asTextMessageEvent());
+                    } else if (event.isAttachmentMessageEvent()) {
+                        handleAttachmentMessageEvent(event.asAttachmentMessageEvent());
+                    } else if (event.isQuickReplyMessageEvent()) {
+                        handleQuickReplyMessageEvent(chatStateMachine, event.asQuickReplyMessageEvent());
+                    } else if (event.isPostbackEvent()) {
+                        handlePostbackEvent(chatStateMachine, event.asPostbackEvent());
+                    } else if (event.isAccountLinkingEvent()) {
+                        handleAccountLinkingEvent(event.asAccountLinkingEvent());
+                    } else if (event.isOptInEvent()) {
+                        handleOptInEvent(event.asOptInEvent());
+                    } else if (event.isMessageEchoEvent()) {
+                        handleMessageEchoEvent(event.asMessageEchoEvent());
+                    } else if (event.isMessageDeliveredEvent()) {
+                        handleMessageDeliveredEvent(event.asMessageDeliveredEvent());
+                    } else if (event.isMessageReadEvent()) {
+                        handleMessageReadEvent(event.asMessageReadEvent());
+                    } else {
+                        handleFallbackEvent(event);
                     }
-                });
-
-
-                if (event.isTextMessageEvent()) {
-                    handleTextMessageEvent(chatStateMachine, event.asTextMessageEvent());
-                } else if (event.isAttachmentMessageEvent()) {
-                    handleAttachmentMessageEvent(event.asAttachmentMessageEvent());
-                } else if (event.isQuickReplyMessageEvent()) {
-                    handleQuickReplyMessageEvent(chatStateMachine, event.asQuickReplyMessageEvent());
-                } else if (event.isPostbackEvent()) {
-                    handlePostbackEvent(chatStateMachine, event.asPostbackEvent());
-                } else if (event.isAccountLinkingEvent()) {
-                    handleAccountLinkingEvent(event.asAccountLinkingEvent());
-                } else if (event.isOptInEvent()) {
-                    handleOptInEvent(event.asOptInEvent());
-                } else if (event.isMessageEchoEvent()) {
-                    handleMessageEchoEvent(event.asMessageEchoEvent());
-                } else if (event.isMessageDeliveredEvent()) {
-                    handleMessageDeliveredEvent(event.asMessageDeliveredEvent());
-                } else if (event.isMessageReadEvent()) {
-                    handleMessageReadEvent(event.asMessageReadEvent());
-                } else {
-                    handleFallbackEvent(event);
                 }
             });
             logger.debug("Processed callback payload successfully");
@@ -470,12 +475,7 @@ public class MessengerPlatformCallbackHandler {
         for (final String machineResponse : chatStateMachine.machineResponses()) {
             sendTextMessage(senderId, machineResponse);
         }
-        final List<String> answers = chatStateMachine.availableUserOptions().stream().map(new Function<Answer, String>() {
-            @Override
-            public String apply(Answer answer) {
-                return answer.toString();
-            }
-        }).collect(Collectors.toList());
+        final List<String> answers = chatStateMachine.availableUserOptions().stream().map(Object::toString).collect(Collectors.toList());
         sendQuickReply(senderId, answers);
     }
 

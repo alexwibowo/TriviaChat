@@ -92,7 +92,7 @@ public class GoogleSheetReader {
                     questionText = (String) row.get(1);
                     final String questionImage = (String) row.get(2);
                     final String correctAnswer = (String) row.get(3);
-                    final String answerExplained = (String) row.get(4);
+                    final String explanation = (String) row.get(4);
                     if (!Strings.isNullOrEmpty(questionSet)) {
                         currentQuestionSet = new QuestionSet(Integer.parseInt(questionSet.trim()));
                         topic.addQuestionSet(currentQuestionSet);
@@ -100,8 +100,11 @@ public class GoogleSheetReader {
 
                     final Question question = new Question(questionText);
                     for (int optionIndex = 5; optionIndex < row.size(); optionIndex++ ) {
-                        String option = (String) row.get(optionIndex);
-                        question.addOption(option);
+                        question.addOption((String) row.get(optionIndex));
+                    }
+
+                    if (!Strings.isNullOrEmpty(explanation)) {
+                        question.setExplanation(explanation);
                     }
 
                     switch (correctAnswer) {
