@@ -92,7 +92,6 @@ public class GoogleSheetReader {
                     questionText = (String) row.get(1);
                     final String questionImage = (String) row.get(2);
                     final String correctAnswer = (String) row.get(3);
-                    final String explanation = (String) row.get(4);
                     if (!Strings.isNullOrEmpty(questionSet)) {
                         currentQuestionSet = new QuestionSet(Integer.parseInt(questionSet.trim()));
                         topic.addQuestionSet(currentQuestionSet);
@@ -103,8 +102,13 @@ public class GoogleSheetReader {
                         question.addOption((String) row.get(optionIndex));
                     }
 
-                    if (!Strings.isNullOrEmpty(explanation)) {
-                        question.setExplanation(explanation);
+                    try {
+                        final String explanation = (String) row.get(4);
+                        if (!Strings.isNullOrEmpty(explanation)) {
+                            question.setExplanation(explanation);
+                        }
+                    } catch (final Exception e) {
+                        LOGGER.error("Some weird error has occurred while trying to retrieve explanation for topic [{}] question [{}]", topicName, question, e);
                     }
 
                     switch (correctAnswer) {
