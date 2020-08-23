@@ -28,8 +28,8 @@ public final class InitialState implements State {
     public List<String> machineResponses(final ChatStateMachineContext context) {
         return Arrays.asList(
                 String.format("Hi %s, welcome to Monash Medical Exam Prep", context.getUserProfile().firstName()),
-                "My name is Tron, I'm a robot",
-                "I can help you prepare for your exam by asking stupid questions",
+                "My name is Bob, I'm a robot",
+                "I can help you prepare for your exam by asking some questions",
                 "Please use the button below to continue to chat with me"
         );
     }
