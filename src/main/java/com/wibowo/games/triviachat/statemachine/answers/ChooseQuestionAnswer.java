@@ -20,7 +20,9 @@ public final class ChooseQuestionAnswer implements Answer {
             case "E":
                 return 4;
         }
-        throw new RuntimeException("WHAT");
+
+        // need to think how to handle this...
+        return 0;
     }
 
     @Override

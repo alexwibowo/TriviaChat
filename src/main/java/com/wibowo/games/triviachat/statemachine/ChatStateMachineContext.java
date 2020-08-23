@@ -5,11 +5,16 @@ import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.QuestionSet;
 import com.wibowo.games.triviachat.Topic;
 import com.wibowo.games.triviachat.TopicRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
 public final class ChatStateMachineContext {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatStateMachineContext.class.getName());
+
     private final UserProfile userProfile;
+
     private final TopicRepository topicRepository;
 
     private int currentYear;
@@ -19,6 +24,8 @@ public final class ChatStateMachineContext {
     private final int[] availableYears;
 
     private QuestionSet currentQuestionSet;
+
+    private int currentQuestionIndex = 0;
 
     private Question currentQuestion;
 
@@ -58,7 +65,7 @@ public final class ChatStateMachineContext {
 
     public void setCurrentTopic(final String value) {
         this.currentTopic = topicRepository.find(value);
-        this.currentQuestionSet = currentTopic.randomQuestionSet();
+        pickNewQuestionSet();
     }
 
     public void setCurrentQuestionSet(final QuestionSet currentQuestionSet) {
@@ -70,11 +77,16 @@ public final class ChatStateMachineContext {
     }
 
     public void pickNextQuestion() {
-        this.currentQuestion = this.currentQuestionSet.randomQuestion();
+        if (!this.currentQuestionSet.hasMoreQuestion(currentQuestionIndex)) {
+            pickNewQuestionSet();
+        }
+        this.currentQuestion = this.currentQuestionSet.getQuestion(currentQuestionIndex++);
         numberOfQuestionsAttemptedSoFar++;
     }
 
-    public boolean questionSetHasFinished() {
-        return numberOfQuestionsAttemptedSoFar == 5;
+    private void pickNewQuestionSet() {
+        LOGGER.info("Picking up new question set...");
+        this.currentQuestionSet = currentTopic.randomQuestionSet();
+        this.currentQuestionIndex = 0;
     }
 }
