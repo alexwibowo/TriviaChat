@@ -5,12 +5,13 @@ import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.QuestionSet;
 import com.wibowo.games.triviachat.Topic;
 import com.wibowo.games.triviachat.TopicRepository;
+import com.wibowo.machinia.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-public final class ChatStateMachineContext {
+public final class ChatStateMachineContext implements Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatStateMachineContext.class.getName());
 
     private final UserProfile userProfile;

@@ -1,31 +1,32 @@
 package com.wibowo.games.triviachat.statemachine.states;
 
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.ChooseYearAnswer;
-import com.wibowo.games.triviachat.statemachine.answers.Reset;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.ChooseYearCommand;
+import com.wibowo.games.triviachat.statemachine.commands.Reset;
+import com.wibowo.machinia.State;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public final class YearNotDetermined implements State{
+public final class YearNotDetermined implements State<ChatStateMachineContext> {
     public static final YearNotDetermined INSTANCE = new YearNotDetermined();
 
     @Override
-    public List<Answer> availableUserOptions(final ChatStateMachineContext context) {
-        final ArrayList<Answer> answers = new ArrayList<>();
+    public List<Command> availableCommands(final ChatStateMachineContext context) {
+        final ArrayList<Command> commands = new ArrayList<>();
         int[] availableYears = context.getAvailableYears();
         for (int availableYear : availableYears) {
-            answers.add(new ChooseYearAnswer(availableYear));
+            commands.add(new ChooseYearCommand(availableYear));
         }
-        answers.add(Reset.INSTANCE);
-        return answers;
+        commands.add(Reset.INSTANCE);
+        return commands;
     }
 
     @Override
-    public Answer parseAnswer(final String answerString) {
-        return new ChooseYearAnswer(Integer.parseInt(answerString));
+    public Command parseCommand(final String commandString) {
+        return new ChooseYearCommand(Integer.parseInt(commandString));
     }
 
     @Override
@@ -38,9 +39,9 @@ public final class YearNotDetermined implements State{
 
     @Override
     public State onCommand(final ChatStateMachineContext context,
-                           final Answer answer) {
-        if (answer instanceof ChooseYearAnswer) {
-            final ChooseYearAnswer chooseYearAnswer = (ChooseYearAnswer) answer;
+                           final Command command) {
+        if (command instanceof ChooseYearCommand) {
+            final ChooseYearCommand chooseYearAnswer = (ChooseYearCommand) command;
             context.setCurrentYear(chooseYearAnswer.getYear());
             return TopicNotDetermined.INSTANCE;
         }

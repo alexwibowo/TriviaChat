@@ -36,7 +36,7 @@ import com.github.messenger4j.webhook.event.attachment.LocationAttachment;
 import com.github.messenger4j.webhook.event.attachment.RichMediaAttachment;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachine;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
+import com.wibowo.machinia.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -493,9 +493,9 @@ public class MessengerPlatformCallbackHandler {
         for (final String machineResponse : chatStateMachine.machineResponses()) {
             sendTextMessage(senderId, machineResponse);
         }
-        final List<String> answers = chatStateMachine.availableUserOptions().stream().map(new Function<Answer, String>() {
+        final List<String> answers = chatStateMachine.availableUserOptions().stream().map(new Function<Command, String>() {
             @Override
-            public String apply(Answer answer) {
+            public String apply(Command answer) {
                 return answer.toString();
             }
         }).collect(Collectors.toList());

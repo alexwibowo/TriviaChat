@@ -5,10 +5,10 @@ import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.QuestionSet;
 import com.wibowo.games.triviachat.Topic;
 import com.wibowo.games.triviachat.TopicRepository;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.ChooseTopicAnswer;
-import com.wibowo.games.triviachat.statemachine.answers.ChooseYearAnswer;
-import com.wibowo.games.triviachat.statemachine.answers.StartTrivia;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.ChooseTopicCommand;
+import com.wibowo.games.triviachat.statemachine.commands.ChooseYearCommand;
+import com.wibowo.games.triviachat.statemachine.commands.StartTrivia;
 import com.wibowo.games.triviachat.statemachine.states.QuizReady;
 import com.wibowo.games.triviachat.statemachine.states.TopicNotDetermined;
 import com.wibowo.games.triviachat.statemachine.states.YearNotDetermined;
@@ -70,8 +70,8 @@ class ChatStateMachineTest {
     class InitialStateTest {
         @Test
         void possible_answers() {
-            final List<Answer> answers = stateMachine.availableUserOptions();
-            assertThat(answers)
+            final List<Command> commands = stateMachine.availableUserOptions();
+            assertThat(commands)
                     .contains(StartTrivia.INSTANCE);
         }
 
@@ -114,11 +114,11 @@ class ChatStateMachineTest {
 
         @Test
         void possible_answers() {
-            final List<Answer> answers = stateMachine.availableUserOptions();
-            assertThat(answers)
-                    .contains(new ChooseYearAnswer(1),
-                            new ChooseYearAnswer(2),
-                            new ChooseYearAnswer(3)
+            final List<Command> commands = stateMachine.availableUserOptions();
+            assertThat(commands)
+                    .contains(new ChooseYearCommand(1),
+                            new ChooseYearCommand(2),
+                            new ChooseYearCommand(3)
                     );
         }
 
@@ -151,10 +151,10 @@ class ChatStateMachineTest {
 
         @Test
         void possible_answers() {
-            final List<Answer> answers = stateMachine.availableUserOptions();
-            assertThat(answers)
-                    .contains(new ChooseTopicAnswer("CARDIOLOGY"),
-                            new ChooseTopicAnswer("RESPIRATORY")
+            final List<Command> commands = stateMachine.availableUserOptions();
+            assertThat(commands)
+                    .contains(new ChooseTopicCommand("CARDIOLOGY"),
+                            new ChooseTopicCommand("RESPIRATORY")
                     );
         }
 

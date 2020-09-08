@@ -1,28 +1,29 @@
 package com.wibowo.games.triviachat.statemachine.states;
 
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.Reset;
-import com.wibowo.games.triviachat.statemachine.answers.StartQuizAnswer;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.Reset;
+import com.wibowo.games.triviachat.statemachine.commands.StartQuizCommand;
+import com.wibowo.machinia.State;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public final class QuizReady implements State{
+public final class QuizReady implements State<ChatStateMachineContext> {
     public static final QuizReady INSTANCE = new QuizReady();
 
     @Override
-    public List<Answer> availableUserOptions(final ChatStateMachineContext context) {
+    public List<Command> availableCommands(final ChatStateMachineContext context) {
         return Arrays.asList(
-                StartQuizAnswer.INSTANCE,
+                StartQuizCommand.INSTANCE,
                 Reset.INSTANCE
         );
     }
 
     @Override
-    public Answer parseAnswer(final String answerString) {
-        return StartQuizAnswer.INSTANCE;
+    public Command parseCommand(final String commandString) {
+        return StartQuizCommand.INSTANCE;
     }
 
     @Override
@@ -34,7 +35,7 @@ public final class QuizReady implements State{
 
     @Override
     public State onCommand(final ChatStateMachineContext context,
-                           final Answer answer) {
+                           final Command command) {
         return QuizInProgress.INSTANCE;
     }
 

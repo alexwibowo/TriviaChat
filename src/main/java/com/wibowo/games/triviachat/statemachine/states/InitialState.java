@@ -1,24 +1,25 @@
 package com.wibowo.games.triviachat.statemachine.states;
 
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.StartTrivia;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.StartTrivia;
+import com.wibowo.machinia.State;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public final class InitialState implements State {
+public final class InitialState implements State<ChatStateMachineContext> {
     public static final InitialState INSTANCE = new InitialState();
 
     @Override
-    public List<Answer> availableUserOptions(final ChatStateMachineContext context) {
+    public List<Command> availableCommands(final ChatStateMachineContext context) {
         return Collections.singletonList(StartTrivia.INSTANCE);
     }
 
     @Override
-    public Answer parseAnswer(final String answerString) {
-        if (answerString.equals("START")) {
+    public Command parseCommand(final String commandString) {
+        if (commandString.equals("START")) {
             return StartTrivia.INSTANCE;
         }
         return null;
@@ -36,8 +37,8 @@ public final class InitialState implements State {
 
     @Override
     public State onCommand(final ChatStateMachineContext context,
-                           final Answer answer) {
-        if (answer == StartTrivia.INSTANCE) {
+                           final Command command) {
+        if (command == StartTrivia.INSTANCE) {
             return YearNotDetermined.INSTANCE;
         }
         return this;

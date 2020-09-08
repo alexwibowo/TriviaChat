@@ -2,32 +2,33 @@ package com.wibowo.games.triviachat.statemachine.states;
 
 import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.ChooseQuestionAnswer;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.ChooseQuestionCommand;
+import com.wibowo.machinia.State;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public final class QuizInProgress implements State{
+public final class QuizInProgress implements State<ChatStateMachineContext> {
     public static final QuizInProgress INSTANCE = new QuizInProgress();
     private static final List<String> optionLetters = Arrays.asList("A","B","C","D","E","F","G","H");
 
     @Override
-    public List<Answer> availableUserOptions(final ChatStateMachineContext context) {
+    public List<Command> availableCommands(final ChatStateMachineContext context) {
         final Question currentQuestion = context.getCurrentQuestion();
 
         final List<String> options = currentQuestion.getOptions();
-        final List<Answer> answers = new ArrayList<>();
+        final List<Command> commands = new ArrayList<>();
         for (int i = 0; i < options.size(); i++) {
-            answers.add(new ChooseQuestionAnswer(optionLetters.get(i)));
+            commands.add(new ChooseQuestionCommand(optionLetters.get(i)));
         }
-        return answers;
+        return commands;
     }
 
     @Override
-    public Answer parseAnswer(final String answerString) {
-        return new ChooseQuestionAnswer(answerString);
+    public Command parseCommand(final String commandString) {
+        return new ChooseQuestionCommand(commandString);
     }
 
     @Override
@@ -37,8 +38,8 @@ public final class QuizInProgress implements State{
 
     @Override
     public State onCommand(final ChatStateMachineContext context,
-                           final Answer answer) {
-        final ChooseQuestionAnswer chosenAnswer = (ChooseQuestionAnswer) answer;
+                           final Command command) {
+        final ChooseQuestionCommand chosenAnswer = (ChooseQuestionCommand) command;
         if (context.getCurrentQuestion().getCorrectAnswerIndex() == chosenAnswer.getIndex()) {
             return INSTANCE;
         } else {

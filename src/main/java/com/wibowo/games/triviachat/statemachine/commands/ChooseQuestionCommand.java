@@ -1,9 +1,11 @@
-package com.wibowo.games.triviachat.statemachine.answers;
+package com.wibowo.games.triviachat.statemachine.commands;
 
-public final class ChooseQuestionAnswer implements Answer {
+import com.wibowo.machinia.Command;
+
+public final class ChooseQuestionCommand implements Command {
     private final String option;
 
-    public ChooseQuestionAnswer(String option) {
+    public ChooseQuestionCommand(String option) {
         this.option = option;
     }
 

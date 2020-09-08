@@ -2,16 +2,17 @@ package com.wibowo.games.triviachat.statemachine.states;
 
 import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.NextQuestion;
-import com.wibowo.games.triviachat.statemachine.answers.Reset;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.NextQuestion;
+import com.wibowo.games.triviachat.statemachine.commands.Reset;
+import com.wibowo.machinia.State;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public final class WrongAnswerChosen implements State{
+public final class WrongAnswerChosen implements State<ChatStateMachineContext> {
     public static final WrongAnswerChosen INSTANCE = new WrongAnswerChosen();
     public static final Random random = new Random(System.currentTimeMillis());
 
@@ -32,7 +33,7 @@ public final class WrongAnswerChosen implements State{
     };
 
     @Override
-    public List<Answer> availableUserOptions(ChatStateMachineContext context) {
+    public List<Command> availableCommands(ChatStateMachineContext context) {
         return Arrays.asList(
                 NextQuestion.INSTANCE,
                 Reset.INSTANCE
@@ -40,7 +41,7 @@ public final class WrongAnswerChosen implements State{
     }
 
     @Override
-    public Answer parseAnswer(final String answerString) {
+    public Command parseCommand(final String commandString) {
         return NextQuestion.INSTANCE;
     }
 
@@ -62,7 +63,7 @@ public final class WrongAnswerChosen implements State{
 
     @Override
     public State onCommand(final ChatStateMachineContext context,
-                           final Answer answer) {
+                           final Command command) {
         return QuizInProgress.INSTANCE;
     }
 }

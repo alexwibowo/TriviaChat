@@ -1,11 +1,13 @@
-package com.wibowo.games.triviachat.statemachine.answers;
+package com.wibowo.games.triviachat.statemachine.commands;
+
+import com.wibowo.machinia.Command;
 
 import java.util.Objects;
 
-public final class ChooseYearAnswer implements Answer {
+public final class ChooseYearCommand implements Command {
     private final int year;
 
-    public ChooseYearAnswer(int year) {
+    public ChooseYearCommand(int year) {
         this.year = year;
     }
 
@@ -17,7 +19,7 @@ public final class ChooseYearAnswer implements Answer {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ChooseYearAnswer that = (ChooseYearAnswer) o;
+        ChooseYearCommand that = (ChooseYearCommand) o;
         return year == that.year;
     }
 

@@ -1,10 +1,10 @@
 package com.wibowo.games.triviachat.statemachine;
 
-import com.wibowo.games.triviachat.statemachine.answers.Answer;
-import com.wibowo.games.triviachat.statemachine.answers.InvalidAnswer;
-import com.wibowo.games.triviachat.statemachine.answers.Reset;
+import com.wibowo.machinia.Command;
+import com.wibowo.games.triviachat.statemachine.commands.InvalidCommand;
+import com.wibowo.games.triviachat.statemachine.commands.Reset;
 import com.wibowo.games.triviachat.statemachine.states.InitialState;
-import com.wibowo.games.triviachat.statemachine.states.State;
+import com.wibowo.machinia.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,33 +25,37 @@ public final class ChatStateMachine {
         return currentState.machineResponses(chatStateMachineContext);
     }
 
-    public List<Answer> availableUserOptions() {
-        return currentState.availableUserOptions(chatStateMachineContext);
+    public List<Command> availableUserOptions() {
+        return currentState.availableCommands(chatStateMachineContext);
     }
 
     public State process(final String answerString) {
-        final Answer answer = parseAnswer(answerString);
-        if (answer == Reset.INSTANCE) {
+        final Command command = parseAnswer(answerString);
+        if (command == Reset.INSTANCE) {
             currentState = InitialState.INSTANCE;
             currentState.onEnter(chatStateMachineContext);
-        } else if (answer == InvalidAnswer.INSTANCE) {
+        } else if (command == InvalidCommand.INSTANCE) {
             // nothing
         } else {
-            currentState = currentState.onCommand(chatStateMachineContext, answer);
-            currentState.onEnter(chatStateMachineContext);
+            final State newState = this.currentState.onCommand(chatStateMachineContext, command);
+            if (newState != currentState) {
+                this.currentState.onExit(chatStateMachineContext);
+            }
+            this.currentState = newState;
+            this.currentState.onEnter(chatStateMachineContext);
         }
         return currentState;
     }
 
-    private Answer parseAnswer(final String answerString) {
+    private Command parseAnswer(final String answerString) {
         if (answerString.equals("RESET")) {
             return Reset.INSTANCE;
         }
         try {
-            return currentState.parseAnswer(answerString);
+            return currentState.parseCommand(answerString);
         } catch (final Exception e) {
             LOGGER.error("Invalid answer", e);
-            return InvalidAnswer.INSTANCE;
+            return InvalidCommand.INSTANCE;
         }
     }
 }
