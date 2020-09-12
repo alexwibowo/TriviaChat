@@ -36,6 +36,7 @@ import com.github.messenger4j.webhook.event.attachment.LocationAttachment;
 import com.github.messenger4j.webhook.event.attachment.RichMediaAttachment;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachine;
 import com.wibowo.games.triviachat.statemachine.ChatStateMachineContext;
+import com.wibowo.games.triviachat.statemachine.states.InitialState;
 import com.wibowo.machinia.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,12 +133,12 @@ public class MessengerPlatformCallbackHandler {
                     final ChatStateMachine chatStateMachine = chatStateMachines.computeIfAbsent(senderId, senderId1 -> {
                         try {
                             final UserProfile userProfile = MessengerPlatformCallbackHandler.this.messenger.queryUserProfile(senderId1);
-                            final ChatStateMachineContext chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2});
+                            final ChatStateMachineContext chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2}, InitialState.INSTANCE);
                             return new ChatStateMachine(chatStateMachineContext);
                         } catch (MessengerApiException|MessengerIOException e) {
                             LOGGER.error("Something weird", e);
                             return new ChatStateMachine(new ChatStateMachineContext(new UserProfile("UNKNOWN", "UNKNOWN", "UNKNOWN", "AU", (float) 10, UserProfile.Gender.MALE)
-                                    , topicRepository, new int[]{1, 2, 3}));
+                                    , topicRepository, new int[]{1, 2, 3}, InitialState.INSTANCE));
                         }
                     });
 

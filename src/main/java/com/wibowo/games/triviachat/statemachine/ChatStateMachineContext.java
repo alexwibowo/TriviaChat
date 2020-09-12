@@ -6,6 +6,8 @@ import com.wibowo.games.triviachat.QuestionSet;
 import com.wibowo.games.triviachat.Topic;
 import com.wibowo.games.triviachat.TopicRepository;
 import com.wibowo.machinia.Context;
+import com.wibowo.machinia.State;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,12 +34,26 @@ public final class ChatStateMachineContext implements Context {
 
     private int numberOfQuestionsAttemptedSoFar = 0;
 
+    private State<ChatStateMachineContext> currentState;
+
     public ChatStateMachineContext(final UserProfile userProfile,
                                    final TopicRepository topicRepository,
-                                   final int[] availableYears) {
+                                   final int[] availableYears,
+                                   final @NotNull State<ChatStateMachineContext> initialState) {
         this.userProfile = userProfile;
         this.topicRepository = topicRepository;
         this.availableYears = availableYears;
+        this.currentState = initialState;
+    }
+
+    @Override
+    public long id() {
+        return userProfile.hashCode();
+    }
+
+    @Override
+    public State<ChatStateMachineContext> currentState() {
+        return currentState;
     }
 
     public int[] getAvailableYears() {
@@ -90,4 +106,7 @@ public final class ChatStateMachineContext implements Context {
         this.currentQuestionSet = currentTopic.randomQuestionSet();
         this.currentQuestionIndex = 0;
     }
+
+
+
 }

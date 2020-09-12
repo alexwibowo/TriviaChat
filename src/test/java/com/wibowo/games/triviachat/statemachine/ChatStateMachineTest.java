@@ -5,6 +5,7 @@ import com.wibowo.games.triviachat.Question;
 import com.wibowo.games.triviachat.QuestionSet;
 import com.wibowo.games.triviachat.Topic;
 import com.wibowo.games.triviachat.TopicRepository;
+import com.wibowo.games.triviachat.statemachine.states.InitialState;
 import com.wibowo.machinia.Command;
 import com.wibowo.games.triviachat.statemachine.commands.ChooseTopicCommand;
 import com.wibowo.games.triviachat.statemachine.commands.ChooseYearCommand;
@@ -17,12 +18,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ChatStateMachineTest {
 
-    private ChatStateMachine stateMachine;
+    private ChatStateMachine2 stateMachine;
     private ChatStateMachineContext chatStateMachineContext;
 
     @BeforeEach
@@ -42,7 +44,6 @@ class ChatStateMachineTest {
         final Topic cardiology = new Topic("CARDIOLOGY");
         cardiology.addQuestionSet(cardiologyQuestionSet1);
 
-
         final QuestionSet respiratoryQuestionSet1 = new QuestionSet(0);
         respiratoryQuestionSet1.addQuestion(new Question(
                 "Which of the following is not a sign or symptom of a pulmonary embolism?")
@@ -61,23 +62,33 @@ class ChatStateMachineTest {
         topicRepository.addTopic(cardiology);
         topicRepository.addTopic(respiratory);
 
-        chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2, 3});
+        chatStateMachineContext = new ChatStateMachineContext(userProfile, topicRepository, new int[]{1, 2, 3}, InitialState.INSTANCE);
         chatStateMachineContext.setCurrentQuestionSet(cardiologyQuestionSet1);
-        stateMachine = new ChatStateMachine(chatStateMachineContext);
+        stateMachine = new ChatStateMachine2(new Function<String, Command>() {
+            @Override
+            public Command apply(final String commandString) {
+                switch (commandString) {
+                    case "START":
+                        return StartTrivia.INSTANCE;
+                    default:
+                        throw new IllegalArgumentException("unknown");
+                }
+            }
+        });
     }
 
     @Nested
     class InitialStateTest {
         @Test
         void possible_answers() {
-            final List<Command> commands = stateMachine.availableUserOptions();
+            final List<Command> commands = chatStateMachineContext.availableCommands();
             assertThat(commands)
                     .contains(StartTrivia.INSTANCE);
         }
 
         @Test
         void machine_responses() {
-            final List<String> responses = stateMachine.machineResponses();
+            final List<String> responses = chatStateMachineContext.machineResponses();
             assertThat(responses)
                     .contains(
                             "Hi Alex, welcome to Monash Medical Exam Prep",
@@ -89,7 +100,7 @@ class ChatStateMachineTest {
 
         @Test
         void user_is_ready() {
-            assertThat(stateMachine.process("READY"))
+            assertThat(stateMachine.process(chatStateMachineContext, StartTrivia.INSTANCE))
                     .isEqualTo(YearNotDetermined.INSTANCE);
         }
     }
@@ -99,12 +110,12 @@ class ChatStateMachineTest {
 
         @BeforeEach
         void setup() {
-            stateMachine.process("READY");
+            stateMachine.process(chatStateMachineContext, StartTrivia.INSTANCE);
         }
 
         @Test
         void machine_responses() {
-            final List<String> responses = stateMachine.machineResponses();
+            final List<String> responses = chatStateMachineContext.machineResponses();
             assertThat(responses)
                     .contains(
                             "Fabulous",
@@ -114,7 +125,7 @@ class ChatStateMachineTest {
 
         @Test
         void possible_answers() {
-            final List<Command> commands = stateMachine.availableUserOptions();
+            final List<Command> commands = chatStateMachineContext.availableCommands();
             assertThat(commands)
                     .contains(new ChooseYearCommand(1),
                             new ChooseYearCommand(2),
@@ -124,7 +135,7 @@ class ChatStateMachineTest {
 
         @Test
         void user_chose_a_year() {
-            assertThat(stateMachine.process("1"))
+            assertThat(stateMachine.process(chatStateMachineContext, new ChooseYearCommand(1)))
                     .isEqualTo(TopicNotDetermined.INSTANCE);
             assertThat(chatStateMachineContext.getCurrentYear())
                     .isEqualTo(1);
@@ -135,13 +146,13 @@ class ChatStateMachineTest {
     class TopicNotDeterminedState {
         @BeforeEach
         void setup() {
-            stateMachine.process("READY");
-            stateMachine.process("1"); // choose year
+            stateMachine.process(chatStateMachineContext, StartTrivia.INSTANCE);
+            stateMachine.process(chatStateMachineContext, new ChooseYearCommand(1)); // choose year
         }
 
         @Test
         void machine_responses() {
-            final List<String> responses = stateMachine.machineResponses();
+            final List<String> responses = chatStateMachineContext.machineResponses();
             assertThat(responses)
                     .contains(
                             "Awesome",
@@ -151,7 +162,7 @@ class ChatStateMachineTest {
 
         @Test
         void possible_answers() {
-            final List<Command> commands = stateMachine.availableUserOptions();
+            final List<Command> commands = chatStateMachineContext.availableCommands();
             assertThat(commands)
                     .contains(new ChooseTopicCommand("CARDIOLOGY"),
                             new ChooseTopicCommand("RESPIRATORY")
@@ -160,7 +171,7 @@ class ChatStateMachineTest {
 
         @Test
         void user_chose_a_topic() {
-            assertThat(stateMachine.process("CARDIOLOGY"))
+            assertThat(stateMachine.process(chatStateMachineContext, new ChooseTopicCommand("CARDIOLOGY")))
                     .isEqualTo(QuizReady.INSTANCE);
             assertThat(chatStateMachineContext.getCurrentYear())
                     .isEqualTo(1);

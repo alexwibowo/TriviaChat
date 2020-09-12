@@ -8,8 +8,8 @@ public interface State<C extends Context> {
         // default: do nothing
     }
 
-    State onCommand(C context,
-                    Command command);
+    State<C> onCommand(C context,
+                       Command command);
 
     default void onExit(final C context) {
         // default: do nothing
