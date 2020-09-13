@@ -22,6 +22,13 @@ dependencies {
     //spring-core
     //spring-mvc
     //spring-boot-starter-tomcat
+    implementation platform("org.apache.logging.log4j:log4j-bom:${log4j2BomVersion}")
+    implementation group:"org.slf4j", name: "slf4j-api", version: slf4jVersion
+    runtime group:"org.apache.logging.log4j", name: "log4j-api"
+    runtime group:"org.apache.logging.log4j", name: "log4j-core"
+    runtime group:"org.apache.logging.log4j", name: "log4j-jcl"
+    runtime group:"org.apache.logging.log4j", name: "log4j-slf4j-impl"
+
     implementation('org.springframework.boot:spring-boot-starter-web'){
         /** Exclude commons-logging and logback from spring boot. We are using log4j2 */
         exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
@@ -32,6 +39,7 @@ dependencies {
         /** Exclude commons-logging and logback from spring boot. We are using log4j2 */
         exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
         exclude group: "ch.qos.logback", module: "logback-classic"
+        exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
     }
     compile 'com.github.messenger4j:messenger4j:1.1.0'
 
